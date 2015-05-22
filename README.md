@@ -2,7 +2,7 @@
 node.js project for parsing and visualing kismet logs
 
 Example config.json
-
+```
 {
 	"host": "192.168.1.1",
 	"port": 2501,
@@ -13,3 +13,4 @@ Example config.json
 			"11.11.11.11.11.11"
 		]
 }
+```
