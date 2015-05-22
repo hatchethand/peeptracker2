@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/hatchethand/peeptracker2",
   "dependencies": {
-    "kismet": "0.0.1"
+    "kismet": "0.0.1",
+    "ws": "^0.7.2"
   }
 }
