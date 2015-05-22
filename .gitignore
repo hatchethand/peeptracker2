@@ -44,6 +44,8 @@ Temporary Items
 
 node_modules
 
+#Local configuration file
+config.json
 
-#Kistmet stuff
+#Kismet stuff
 .netxml
