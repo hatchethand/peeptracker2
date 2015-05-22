@@ -195,10 +195,10 @@ peertracker.prototype.init = function(){
         console.log('received: %s', message);
     });
 
-    //TODO: why does this not work
-    this.ws.on('close', function(ws){
-        console.log("Client Disconnected....");
-    });
+//    TODO: why does this not work
+    // this.ws.on('close', function(ws){
+        // console.log("Client Disconnected....");
+    // });
 };
 
 
