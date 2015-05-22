@@ -18,18 +18,14 @@ var peertracker = function () {
 		config.port,
 		config.sourceAddress);
 
-    self.CLIENTS_DETECTED = [];
-
-    self.IGNORED_BSSIDS = [
-        '48:F8:B3:92:F7:E4'
-    ];
-
+	// initialize the arrays for tracking devices seen by Kismet
+	self.CLIENTS_DETECTED = [];
     self.FOUND_BSSIDS =  [];
-
   
     // Get the list of MAC addresses from the config.json file to ignore
     self.VALID_MACS = config.validMACs
-
+	// and the list of BSSIDs to ignore, too
+    self.VALID_BSSIDS = config.validBSSIDs
 
     self.k.on('ready', function () {
         var self = this;
@@ -37,7 +33,7 @@ var peertracker = function () {
         console.log('ready!')
 
         this.subscribe('bssid'
-            , ['bssid', 'manuf', 'channel', 'type']
+            , ['bssid', 'manuf', 'channel', 'type', 'signal_dbm']
             , function (had_error, message) {
                 console.log('bssid - ' + message)
             }
@@ -48,7 +44,7 @@ var peertracker = function () {
                 console.log('ssid - ' + message)
             })
         this.subscribe('client'
-            , ['bssid', 'mac', 'type']
+            , ['bssid', 'mac', 'manuf', 'channel', 'type', 'signal_dbm']
             , function (had_error, message) {
                 console.log('client - ' + message)
                 
@@ -68,10 +64,12 @@ var peertracker = function () {
 
     self.BSSID_Found = function(fields){
         var self = this;
-        if (!self.IGNORED_BSSIDS.contains(fields.bssid)) {
+        if (!self.VALID_BSSIDS.contains(fields.bssid)) {
             if(!self.FOUND_BSSIDS.contains(fields.bssid)){
                 self.FOUND_BSSIDS.push(fields.bssid);
-                console.log("New BSSID " + fields.bssid + " Detected. - Manuf: " + fields.manuf);
+                console.log("New BSSID " + fields.bssid + " Detected" +
+							" -Manuf: " + fields.manuf +
+							" -dBm: " + fields.signal_dbm);
                 self.printStats();
             }else{
                //Uncomment this if you want to get spammed by BSSID traffic
@@ -135,7 +133,9 @@ var peertracker = function () {
             if (!self.VALID_MACS.contains(fields.mac)) {
                 if(!self.CLIENTS_DETECTED.contains(fields.mac)){
                     self.CLIENTS_DETECTED.push(fields.mac);
-                    console.log("New CLIENT " + fields.mac + " Detected.");
+                    console.log("New CLIENT " + fields.mac + " Detected" +
+							" -Manuf: " + fields.manuf +
+							" -dBm: " + fields.signal_dbm);
                     self.printStats();
 
                 }else{
