@@ -1,4 +1,5 @@
 var fs = require("fs");
+var config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
 var file = "peertracker.db";
 var exists = fs.existsSync(file);
 var Kismet = require("kismet");
@@ -11,8 +12,11 @@ Array.prototype.contains = function (element) {
 
 var peertracker = function () {
     var self = this;
-    self.k = new Kismet('192.168.1.133',2501,'192.168.1.106');
-//    self.k = new Kismet();
+		console.log('ready!')
+    self.k = new Kismet(
+		config.host,
+		config.port,
+		config.sourceAddress);
 
     self.CLIENTS_DETECTED = [];
 
@@ -25,33 +29,8 @@ var peertracker = function () {
   
     //TODO: change this to a valid_macs.txt file vs in code.
     self.VALID_MACS = [
-        //'CC:B2:55:93:C9:82',
-        //'54:42:49:D3:3E:12',
-        //'80:BE:05:A2:36:63',
-        //'00:23:63:29:7F:A7',
-        //'8C:2D:AA:2D:71:0F',
-        //'B8:F6:B1:1A:61:9B',
-        //'6C:AD:F8:04:98:05',
-        //'04:54:53:01:A6:CE',
-        //'B8:E9:37:8E:4F:70',
-        //'58:55:CA:51:E2:69',
-        //'D0:E7:82:EE:C6:9F',
-        //'18:B4:30:02:61:43',
-        //'00:0D:4B:DC:EF:49',
-        //'B8:E9:37:76:56:42',
-        //'E0:B9:BA:AE:15:8C',
-        //'B8:E9:37:3C:F5:02',
-        //'FC:C2:DE:36:FD:71',
-        //'C0:F2:FB:36:F5:B9',
-        //'18:B4:30:2D:3E:39',
-        //'B8:E9:37:8E:50:1E',
-        //'BC:F5:AC:DF:DA:DD',
-        //'60:67:20:28:43:10',
-        //'7C:66:9D:53:6C:72',
-        //'B8:E9:37:61:4C:72',
-        //'7C:66:9D:53:6C:72',
-        //'1C:3E:84:8B:56:A6',
-        //'00:22:75:24:7F:BC'
+        '00:00:00:00:00:00',
+        '00:00:00:00:00:00'
     ];
 
 
@@ -98,9 +77,8 @@ var peertracker = function () {
                 console.log("New BSSID " + fields.bssid + " Detected. - Manuf: " + fields.manuf);
                 self.printStats();
             }else{
-                //Uncomment this if you want to get spammed by BSSID traffic
+               //Uncomment this if you want to get spammed by BSSID traffic
                //console.log("Ignoring BSSID: " + fields.bssid);
-
             }
         }
     };
@@ -162,7 +140,6 @@ var peertracker = function () {
                     self.CLIENTS_DETECTED.push(fields.mac);
                     console.log("New CLIENT " + fields.mac + " Detected.");
                     self.printStats();
-                    self.sendToWebSocket(fields);
 
                 }else{
 
@@ -207,17 +184,18 @@ peertracker.prototype.sendToWebSocket = function(message){
 }
 
 peertracker.prototype.init = function(){
-    var self = this;
+    console.log('peertracker init')
+	var self = this;
     //-===============================
     //Websocket Code
 
-    this.ws = new WebSocketServer({port: 8080});
+    ws = new WebSocketServer({port: 8080});
 
-    this.ws.on('connection', function (ws) {
+    ws.on('connection', function (ws) {
         console.log("WebSocket Connected...");
     });
 
-    this.ws.on('message', function (message) {
+    ws.on('message', function (message) {
         console.log('received: %s', message);
     });
 
@@ -234,7 +212,6 @@ module.exports = peertracker;
 //This kicks our server off
 
 var pt = new peertracker();
-
 pt.init();
 
 
