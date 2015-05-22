@@ -26,6 +26,8 @@ var peertracker = function () {
 
     self.FOUND_BSSIDS =  [];
 
+  
+    //TODO: change this to a valid_macs.txt file vs in code.
     self.VALID_MACS = [
         '00:00:00:00:00:00',
         '00:00:00:00:00:00'
@@ -52,6 +54,7 @@ var peertracker = function () {
             , ['bssid', 'mac', 'type']
             , function (had_error, message) {
                 console.log('client - ' + message)
+                
             })
 
 
@@ -74,8 +77,8 @@ var peertracker = function () {
                 console.log("New BSSID " + fields.bssid + " Detected. - Manuf: " + fields.manuf);
                 self.printStats();
             }else{
- //               console.log("Ignoring BSSID: " + fields.bssid);
-
+               //Uncomment this if you want to get spammed by BSSID traffic
+               //console.log("Ignoring BSSID: " + fields.bssid);
             }
         }
     };
@@ -127,6 +130,7 @@ var peertracker = function () {
     self.printStats = function(){
         console.log("Clients #"+ self.CLIENTS_DETECTED.length.toString() + " BSSIDS #" + self.FOUND_BSSIDS.length.toString());
     };
+
     self.f = function (fields) {
         var self = this;
 
@@ -136,11 +140,11 @@ var peertracker = function () {
                     self.CLIENTS_DETECTED.push(fields.mac);
                     console.log("New CLIENT " + fields.mac + " Detected.");
                     self.printStats();
+
                 }else{
 
                 }
 
-                self.sendToWebSocket(fields);
             }
         }
     };
@@ -149,7 +153,10 @@ var peertracker = function () {
 
 
     self.k.on("CLIENT", function (fields) {
+        fields.msg_type = "CLIENT";
         self.f(fields);
+
+        //post the new client data to the websockets connected
     });
 
 //-===============================
@@ -171,7 +178,11 @@ var peertracker = function () {
 peertracker.prototype.sendToWebSocket = function(message){
     var self = this;
    // ws.send(message);
+    self.ws.clients.forEach(function each(client) {
+        client.send(JSON.stringify(message));
+    });
 }
+
 peertracker.prototype.init = function(){
     console.log('peertracker init')
 	var self = this;
@@ -186,6 +197,11 @@ peertracker.prototype.init = function(){
 
     ws.on('message', function (message) {
         console.log('received: %s', message);
+    });
+
+    //TODO: why does this not work
+    this.ws.on('close', function(ws){
+        console.log("Client Disconnected....");
     });
 };
 
