@@ -27,11 +27,8 @@ var peertracker = function () {
     self.FOUND_BSSIDS =  [];
 
   
-    //TODO: change this to a valid_macs.txt file vs in code.
-    self.VALID_MACS = [
-        '00:00:00:00:00:00',
-        '00:00:00:00:00:00'
-    ];
+    // Get the list of MAC addresses from the config.json file to ignore
+    self.VALID_MACS = config.validMACs
 
 
     self.k.on('ready', function () {
@@ -184,7 +181,6 @@ peertracker.prototype.sendToWebSocket = function(message){
 }
 
 peertracker.prototype.init = function(){
-    console.log('peertracker init')
 	var self = this;
     //-===============================
     //Websocket Code
