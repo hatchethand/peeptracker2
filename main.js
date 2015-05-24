@@ -1,7 +1,6 @@
 var fs = require("fs");
 var config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
 var file = "peertracker.db";
-var exists = fs.existsSync(file);
 var Kismet = require("kismet");
 var WebSocketServer = require('ws').Server;
 
@@ -9,6 +8,43 @@ var WebSocketServer = require('ws').Server;
 Array.prototype.contains = function (element) {
     return this.indexOf(element) > -1;
 };
+
+function initDB() { 
+	var exists = fs.existsSync(file);
+	var sqlite3 = require("sqlite3").verbose();
+	db = new sqlite3.Database(file);
+	
+	// assumes compatible schema if the db file already exists
+	// otherwise, create the db file and tables that we need
+	db.serialize(function() {
+		if(!exists) {
+			db.run("CREATE TABLE client (" +
+						"mac TEXT," + 
+						"bssid TEXT," +
+						"manuf TEXT)")
+			db.run("CREATE TABLE bssid (" +
+						"bssid TEXT," +
+						"manuf TEXT)")
+			db.run("CREATE TABLE clientObs (" +
+						"clientID INT," +
+						"channel TEXT," +
+						"signal_dbm TEXT," +
+						"lasttime TEXT)")
+			db.run("CREATE TABLE bssidObs (" +
+						"bssidID INT," +
+						"channel TEXT," +
+						"signal_dbm TEXT," +
+						"lasttime TEXT)")
+		}
+	
+	// We are only recording data from the kismet server, not modifying, so
+	// define the INSERT statements that we'll use for each of the tables
+	sqlInsertClient = db.prepare("INSERT INTO client VALUES (?,?,?)");
+	sqlInsertBSSID = db.prepare("INSERT INTO bssid VALUES (?,?)");
+	sqlInsertClientObs = db.prepare("INSERT INTO clientObs VALUES (?,?,?,?)");
+	sqlInsertBSSIDObs = db.prepare("INSERT INTO bssidObs VALUES (?,?,?,?)");
+	});
+}
 
 var peertracker = function () {
     var self = this;
@@ -21,7 +57,10 @@ var peertracker = function () {
 	// initialize the arrays for tracking devices seen by Kismet
 	self.CLIENTS_DETECTED = [];
     self.FOUND_BSSIDS =  [];
-  
+
+	// initialize SQLite database
+	initDB()
+	
     // Get the list of MAC addresses from the config.json file to ignore
     self.VALID_MACS = config.validMACs
 	// and the list of BSSIDs to ignore, too
@@ -33,18 +72,18 @@ var peertracker = function () {
         console.log('ready!')
 
         this.subscribe('bssid'
-            , ['bssid', 'manuf', 'channel', 'type', 'signal_dbm']
+            , ['bssid', 'manuf', 'channel', 'type', 'signal_dbm', 'lasttime']
             , function (had_error, message) {
                 console.log('bssid - ' + message)
             }
         )
         this.subscribe('ssid'
-            , ['ssid', 'mac', 'cryptset', 'type', 'packets']
+            , ['ssid', 'mac', 'cryptset', 'type', 'packets', 'lasttime']
             , function (had_error, message) {
                 console.log('ssid - ' + message)
             })
         this.subscribe('client'
-            , ['bssid', 'mac', 'manuf', 'channel', 'type', 'signal_dbm']
+            , ['bssid', 'mac', 'manuf', 'channel', 'type', 'signal_dbm', 'lasttime']
             , function (had_error, message) {
                 console.log('client - ' + message)
                 
@@ -71,10 +110,31 @@ var peertracker = function () {
 							" -Manuf: " + fields.manuf +
 							" -dBm: " + fields.signal_dbm);
                 self.printStats();
+			
+				sqlInsertBSSID.run(
+					fields.bssid,
+					fields.manuf
+					)
             }else{
                //Uncomment this if you want to get spammed by BSSID traffic
                //console.log("Ignoring BSSID: " + fields.bssid);
             }
+			// always record an observation, even if we've already seen it
+			db.serialize(function() {
+				db.each("SELECT rowid FROM bssid " +
+						"WHERE bssid = '" + fields.bssid + "'",
+					function(err, row) {
+						if (row) {
+							var bssidID = row.rowid
+							sqlInsertBSSIDObs.run(
+								bssidID,	//bssid table primary key
+								fields.channel,
+								fields.signal_dbm,
+								fields.lasttime
+								)
+						}
+					})
+			})
         }
     };
 
@@ -137,11 +197,31 @@ var peertracker = function () {
 							" -Manuf: " + fields.manuf +
 							" -dBm: " + fields.signal_dbm);
                     self.printStats();
+					
+					sqlInsertClient.run(
+						fields.mac,
+						fields.bssid,
+						fields.manuf
+						)
 
                 }else{
-
                 }
-
+				// always record an observation, even if we've already seen it
+				db.serialize(function() {
+					db.each("SELECT rowid FROM client " +
+							"WHERE mac = '" + fields.mac + "'",
+						function(err, row) {
+							if (row) {
+								var clientID = row.rowid
+								sqlInsertClientObs.run(
+									clientID,	//client table primary key
+									fields.channel,
+									fields.signal_dbm,
+									fields.lasttime
+									)
+							}
+						})
+				})
             }
         }
     };
@@ -164,7 +244,7 @@ var peertracker = function () {
 
 
     self.k.on("connect", function () {
-        console.log("Connected to Kistmet Client");
+        console.log("Connected to Kismet Client");
     });
 
     self.k.connect();

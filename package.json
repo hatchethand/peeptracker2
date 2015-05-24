@@ -23,6 +23,7 @@
   "homepage": "https://github.com/hatchethand/peeptracker2",
   "dependencies": {
     "kismet": "0.0.1",
+    "sqlite3": "^3.0.8",
     "ws": "^0.7.2"
   }
 }

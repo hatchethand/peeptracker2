@@ -47,5 +47,8 @@ node_modules
 #Local configuration file
 config.json
 
+#Local database file
+peertracker.db
+
 #Kismet stuff
 .netxml
