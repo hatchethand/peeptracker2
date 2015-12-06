@@ -1,29 +1,29 @@
 {
-  "name": "peeptracker2",
-  "version": "1.0.0",
-  "description": "A nodejs app to track WIFI clients around your house.",
-  "main": "main.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/hatchethand/peeptracker2.git"
-  },
-  "keywords": [
+    "name": "peeptracker2",
+    "version": "1.0.0",
+    "description": "A nodejs app to track WIFI clients around your house.",
+    "main": "main.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/hatchethand/peeptracker2.git"
+    },
+    "keywords": [
     "kismet",
     "wifi",
     "security"
   ],
-  "author": "riley porter and joe duva",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/hatchethand/peeptracker2/issues"
-  },
-  "homepage": "https://github.com/hatchethand/peeptracker2",
-  "dependencies": {
-    "kismet": "0.0.1",
-    "sqlite3": "^3.0.8",
-    "ws": "^0.7.2"
-  }
+    "author": "riley porter and joe duva",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/hatchethand/peeptracker2/issues"
+    },
+    "homepage": "https://github.com/hatchethand/peeptracker2",
+    "dependencies": {
+        "kismet": "0.0.1",
+        "sqlite3": "^3.0.8",
+        "ws": "^0.7.2"
+    }
 }

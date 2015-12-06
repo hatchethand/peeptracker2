@@ -1,4 +1,5 @@
-var WebSocket = require('ws'), ws = new WebSocket('ws://192.168.1.106:8080');
+var WebSocket = require('ws'),
+    ws = new WebSocket('ws://192.168.1.106:8080');
 
 ws.on('open', function () {
     ws.send('something');
