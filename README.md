@@ -1,6 +1,19 @@
-# peeptracker2
-node.js project for parsing and visualing kismet logs
+# What is peeptracker2 this?
+Peeptracker2 is a node.js project for tracking wifi devices (people) around you.  This project was started from an idea my buddy (Tim) had.  The idea was to be able to detect people around your house 24 hours a day at your house.  What most people do not know is cellphones (any wifi enabled devices) beacon (search for) their trusted wifi accesspoints.  So if you have an accesspoint of "SUPER_SECRET_HOME_AP" then every where you go (while your wifi is enabled) your device is beaconing for this access point.  
 
+# Background
+This all started from someone "breaking" into my car.  I had left my car door unlocked and they went through the car looking for money.  Luckly for me nothing was taken but it still *upset* me.  So this is a result of me being violated and wanting to know by who.
+
+# Want to help?
+Ideas we still need to introduce:
+* Rules - If this then that etc...
+* Notifications - I saw a new device... Your neigbor is using his tablet. etc.
+* BSSID lookups?
+* What else?
+
+
+
+# Configuration
 Example config.json
 ```
 {
